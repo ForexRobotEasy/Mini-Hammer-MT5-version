@@ -1,0 +1,78 @@
+
+// Program: Mini Hammer MT5 version
+// Developer's site: forexroboteasy.com
+// Developer: Forex Robot Easy Team
+
+// Include necessary libraries and functions
+
+#include <Trade/Trade.mqh>  // For trading operations
+#include <ChartObjects/ChartObjects.mqh>  // For chart object operations
+
+// Define global variables
+
+input double Risk = 0.01;  // Risk percentage per trade
+input double Reward = 0.02;  // Reward percentage per trade
+
+CTrade Trade;  // Create an instance of the CTrade class
+
+// Define helper functions
+
+void SetStopLoss(double entryPrice, double stopLoss)
+{
+    double slPrice = entryPrice - stopLoss;  // Calculate stop-loss price
+    Trade.PositionModify(Trade.PositionGetInteger(POSITION_IDENTIFIER), slPrice, 0);  // Modify stop-loss level
+}
+
+void SetTakeProfit(double entryPrice, double takeProfit)
+{
+    double tpPrice = entryPrice + takeProfit;  // Calculate take-profit price
+    Trade.PositionModify(Trade.PositionGetInteger(POSITION_IDENTIFIER), 0, tpPrice);  // Modify take-profit level
+}
+
+void OpenTrade(string symbol, ENUM_ORDER_TYPE orderType, double entryPrice)
+{
+    Trade.PositionOpen(symbol, orderType, entryPrice, 0);  // Open a trade position
+}
+
+bool IsInvertedHammerCandle()
+{
+    // Logic to check if the current candlestick is an Inverted Hammer
+
+    return false;  // Return true if it is an Inverted Hammer, false otherwise
+}
+
+// Define the main function
+
+void OnTick()
+{
+    if (IsInvertedHammerCandle())
+    {
+        double entryPrice = SymbolInfoDouble(_Symbol, SYMBOL_BID);  // Get the current bid price
+
+        SetStopLoss(entryPrice, entryPrice * Risk);  // Set stop-loss level
+        SetTakeProfit(entryPrice, entryPrice * Reward);  // Set take-profit level
+
+        if (Trade.PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY)
+        {
+            OpenTrade(_Symbol, ORDER_TYPE_SELL, entryPrice);  // Close the buy position and open a sell position
+        }
+        else if (Trade.PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_SELL)
+        {
+            OpenTrade(_Symbol, ORDER_TYPE_BUY, entryPrice);  // Close the sell position and open a buy position
+        }
+    }
+}
+
+// Initialize the trading robot
+
+void OnInit()
+{
+    Trade.SetExpertMagicNumber(123456);  // Set expert magic number
+}
+
+// Define the entry point of the program
+
+void OnStart()
+{
+    // Start the trading robot
+}
